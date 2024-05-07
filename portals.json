@@ -1193,14 +1193,14 @@
         "categorization": "Categories",
         "platform": "ArcGis",
         "categories": [
-            "ENVIRONMENT",
-            "BOUNDARIES",
-            "ECONOMY",
-            "PUBLIC SAFETY",
-            "GOVERNMENT",
-            "HEALTH",
-            "NEIGHBORHOODS",
-            "TRANSPORTATION"        ]
+            "Environment",
+            "Boundaries",
+            "Economy",
+            "Public Safety",
+            "Government",
+            "Health",
+            "Neighborhoods",
+            "Transportation"        ]
     },
     {
         "city": "Durham",
@@ -1501,10 +1501,10 @@
         "categorization": "Categories",
         "platform": "ArcGis",
         "categories": [
-            "PARKS & RECREATION",
-            "PUBLIC WORKS",
-            "PLANNING & DEVELOPMENT",
-            "PARKING SERVICES"
+            "Parks & Recreation",
+            "Public Works",
+            "Planning & Development",
+            "Parking Services"
         ]
     },
     {
