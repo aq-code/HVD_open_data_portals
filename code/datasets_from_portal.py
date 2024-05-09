@@ -167,7 +167,7 @@ class Socrata(PortalProcessor):
                 offset = offset + limit
 
 #####
-def getPortalDatasets(Portal):
+def get_Portal_Datasets(Portal):
     ###
     ###     Returns list of extracted datasets from Portal (Dataset_data type objects)
     ###
@@ -184,68 +184,162 @@ def getPortalDatasets(Portal):
     return datasets
 
 
-def portals_ETL(portals,output_filename,get,load,usage,quality):
+######################
+def extract_Categories_Usage(portals, allPortalsDatasetsFile):
+
+    from report import df_datasets_portals,extract_theme,write_portals_categories_usage,write_portals_stats
+
+    listPortalsStats =[]
+    listPortalsCategoryUsage = []
+
+    all_datasets=df_datasets_portals(allPortalsDatasetsFile)
+
+    for p in portals:
+        portal = Portal()
+        portal.city = p[1]
+        portal.url = p[0]
+        portal.platform = p[3]
+        city =  str(p[1])
+
+        catl = extract_theme(portal, all_datasets)
+        catl = catl.sort_values(by='category')
+        catl = catl.reset_index(drop=True)
+        tot = catl['count'].sum()
+        totv = catl['views'].sum()
+        totd = catl['downl'].sum()
+        catl['pdat'] = (catl['count'] / tot) * 100.0
+        catl['pviews'] = (catl['views'] / totv) * 100.0
+        catl['pdownl'] = (catl['downl'] / totd) * 100.0
+
+        catl1 = extract_theme(portal, all_datasets, groupcat=False)
+
+        stat = pd.DataFrame()
+        stat['category'] = catl['category']
+        stat['count'] = pd.to_numeric(catl["count"], downcast="integer")  # datasets number per category
+        stat['pcount'] = stat['count'] / len(catl1)  # len(catl1) ->  datasets number per portal
+        stat['views'] = catl['views']
+        stat['pviews'] = catl['pviews']
+        stat['downl'] = catl['downl']
+        stat['pdownl'] = catl['pdownl']
+        stat['mean'] = catl1.groupby(['category'])['downl'].mean().reset_index()['downl']
+
+        perc=0.95
+        if portal.platform == 'SocrataNew' or portal.platform == 'Socrata':
+            stat['median'] = catl1.groupby(['category'])['downl'].median().reset_index()['downl']
+            stat['p9X'] = catl1.groupby(['category'])['downl'].quantile(perc).reset_index()['downl']
+        else:  ## Other portals
+            stat['median'] = catl1.groupby(['category'])['views'].median().reset_index()['views']
+            stat['p9X'] = catl1.groupby(['category'])['views'].quantile(perc).reset_index()['views']
+
+        ###  HVDvalue metric
+        stat['HVDvalue'] = stat['median'] * stat['pcount']+stat['p9X']*(stat['pcount']*(1-perc))
+
+    #AQ begin 08042024 add save stat on dict, used by categories allignment and HDVi computation
+        stat.set_index("category", drop=True, inplace=True)
+        statdict = stat.to_dict(orient="index")
+        dd = {'city': city, 'url':p[0], 'categorization':'Categories','platform':p[3], 'categories': statdict}
+        listPortalsCategoryUsage.append(dd)
+
+        dictStat={
+            'City': city,
+            'Datasets':     catl1['downl'].count(),
+            'Downloads':    catl1['downl'].sum(),
+            'Mean':         round(catl1['downl'].mean()),
+            'Stdd':         round(catl1['downl'].std()),
+            'Min':          round(catl1['downl'].min()),
+            '1Q':           round(catl1['downl'].quantile(0.25)),
+            '2Q':           round(catl1['downl'].quantile(0.5)),
+            '3Q':           round(catl1['downl'].quantile(0.75)),
+            'Max':          catl1['downl'].max()
+        }
+        listPortalsStats.append(dictStat)
+
+    # AQ end 080424 add save stat on dict, used by categories allignment and HDVi computation
+    write_portals_categories_usage(listPortalsCategoryUsage)
+
+    statPortal = pd.DataFrame(listPortalsStats, columns=['City','Datasets','Downloads','Mean','Stdd','Min','1Q','2Q','3Q','Max'])
+    write_portals_stats(statPortal)
+    return listPortalsCategoryUsage
+
+def portals_ETL(portals,output_filename,get=False,usage=False):
 
     import json
     import os
     output_dir = "output/"
+    output_filename = "AllPortalsDatasetsFile.json"
+    allPortalsDatasetsFile = output_dir + output_filename
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-
-    allPortalsDatasetsFile = output_dir + output_filename
-
-    file = open(allPortalsDatasetsFile, 'w', encoding="utf-8")
-
-    with file as json_file:
-        datasets=[]
-        for p in portals:
-            portal = Portal()
-            portal.city = p[1]
-            portal.url = p[0]
-            portal.platform = p[3]
-
-            if get:
+    if get:
+        file = open(allPortalsDatasetsFile, 'w', encoding="utf-8")
+        with file as json_file:
+            datasets=[]
+            for p in portals:
+                portal = Portal()
+                portal.city = p[1]
+                portal.url = p[0]
+                portal.platform = p[3]
                 print("============================= D O W N L O A D ================================")
                 start = time.time()
-                datasets.append(getPortalDatasets(portal))
+                datasets.append(get_Portal_Datasets(portal))
                 end = time.time()
                 print ('Downloading time for portal: '+portal.city+'  ('+str(int(end - start))+'   sec)')
+                print("===============================================================================")
+            datasets=sum(datasets, [])
+            s = json.dumps(datasets,
+                           indent=4, ensure_ascii=False).encode('utf8').decode('latin1')
+            file.writelines(s)
+        file.close()
+    if usage:
+        extract_Categories_Usage(portals, allPortalsDatasetsFile)
 
-        datasets=sum(datasets, [])
-        s = json.dumps(datasets,
-                       indent=4, ensure_ascii=False).encode('utf8').decode('latin1')
-        file.writelines(s)
-    file.close()
 
+def portals_sample():
+    portals = [
+        ["https://data.austintexas.gov", 'Austin', ' ', 'Socrata', '4408', '875463'],  # API ok
+        ["https://data.cityofnewyork.us", 'New York', ' ', 'Socrata', '3253', '8272963'],  # API ok
+        ["https://data.buffalony.gov", 'Buffalo', ' ', 'Socrata', '2365', '260041'],  # API ok
+        ["https://data.cityofchicago.org", 'Chicago', ' ', 'Socrata', '1790', '2726772'],  # API ok
+        ["https://data.lacity.org", 'Los Angeles', ' ', 'Socrata', '1703', '3883916'],  # API ok
+        ["https://data.seattle.gov", 'Seattle', ' ', 'Socrata', '1118', '654224'],  # API ok
+        ['https://data.sfgov.org', 'San Francisco', ' ', 'Socrata', '1133', '839841'],  # API ok
+        ["https://www.dallasopendata.com", 'Dallas', ' ', 'Socrata', '1173', '1259239'],  # API ok
+        #["https://data.mesaaz.gov", 'Mesa', '', 'Socrata', '1160', ''],
+        #['https://data.oaklandca.gov', 'Oakland', '', 'Socrata', '819', ''],
+        ["https://data.honolulu.gov", 'Honolulu', ' ', 'Socrata', '244', '349275'],  # API ok
+        #["https://stat.stpete.org", 'St. Petersburg', '', 'Socrata', '628', '']
+        #    ['https://data.providenceri.gov','Providence','2019-12-19','Socrata','288','178784'],   #API ok
+        #    ['https://data.nola.gov','New Orleans','2019-12-19','Socrata','215','378623'],          #API ok
+        #    ["https://data.nashville.gov",'Nashville','2019-12-19','Socrata','172','636267'],       #API ok  #Ricaricare i datasetss
+    ]
+    return portals
 
 if __name__ == '__main__':
 
-    portalsUS= [
-            ["https://data.austintexas.gov", 'Austin', '2019-12-19', 'Socrata', '2353', '875463'],  # API ok
-            ["https://data.cityofnewyork.us",'New York','2019-12-19','Socrata','2771','8272963'],   #API ok
-            ["https://data.buffalony.gov",'Buffalo','2019-12-19','Socrata','213','260041'],         #API ok
-            ["https://data.cityofchicago.org",'Chicago','2019-12-19','Socrata','1368','2726772'],   #API ok
-            ["https://data.lacity.org",'Los Angeles','2019-12-18','Socrata','943','3883916'],       #API ok
-            ["https://data.seattle.gov",'Seattle','2019-12-19','Socrata','718','654224'],           #API ok
-            ['https://data.sfgov.org','San Francisco','2019-12-19','Socrata','1001','839841'],      #API ok
-            ["https://www.dallasopendata.com",'Dallas','2019-12-19','Socrata','1001','1259239'],    #API ok
-            ["https://data.honolulu.gov",'Honolulu','2019-12-19','Socrata','244','349275'],         #API ok
-            ['https://data.providenceri.gov','Providence','2019-12-19','Socrata','288','178784'],   #API ok
-            ['https://data.nola.gov','New Orleans','2019-12-19','Socrata','215','378623'],          #API ok
-            ["https://data.nashville.gov",'Nashville','2019-12-19','Socrata','172','636267'],       #API ok  #Ricaricare i datasetss
-         ]
+    from comprehensive_set import compute_Comprehensive_Set
+    from category_alignment import compute_Alignment
+    from HVD_category import compute_HVD
 
-    portals = [["https://data.mesaaz.gov", 'Mesa', '', 'Socrata', '1160', ''],  # API ok
-                ['https://data.oaklandca.gov', 'Oakland', '', 'Socrata', '819', ''],  # API ok
-                ["https://stat.stpete.org", 'St. Petersburg', '', 'Socrata', '628', ''], ]
+    get=False
+    usage=False
+    CSC=False
+    align=False
+    HVD=True
 
-    get=True;
-    load=False;
-    usage=False;
-    quality=False;
-    portals=portals
+    portals=portals_sample()
 
-    output_filename="3PortalsDatasetsFile.json"
-    ###  get data from portals
-    portals_ETL(portals,output_filename,get,load,usage,quality)  ###(A T T E N T I O N: rewriting 'output_filename')
+    output_filename="AllPortalsDatasetsFile.json"
 
+    ###  get usage data from portals
+    portals_ETL(portals,output_filename,get,usage)  ###(A T T E N T I O N: rewriting 'output_filename')
+    ###
+    if CSC:
+        compute_Comprehensive_Set()
+
+    if align:
+        compute_Alignment()
+
+    if HVD:
+        typeChart=True
+        cats=True
+        compute_HVD(typeChart,cats)

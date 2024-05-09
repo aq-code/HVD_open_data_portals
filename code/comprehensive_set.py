@@ -14,7 +14,9 @@ from nlp import tokenizer, remove_stop_words, count_word_frequency
 from portal import read_portals_from_json_file, all_categories, exclude_portals_without_category
         
 def count_portals_for_words(dictWordFreq, portals):
-    
+
+    words_to_remove = ["?","&","gis","/","kc","fy","foia","geo","city","data","go",
+                         "-",",","houston","use","public","department","."]
     dictWordPortals = {}
        
     for word, freq in dictWordFreq.items():
@@ -69,7 +71,7 @@ def fillDictPortalsCoverage(dictWordFreq, portals):
         
     return dictPortalsCoverage
 
-def more_coverage_words(dictAbrangenciaPortais, threshold):
+def more_Coverage_Words(dictAbrangenciaPortais, threshold):
     
     more_coverage_words = []
     
@@ -219,56 +221,57 @@ def write_categories(dictWordFrequentlyCategories, outputCategoriesFile):
     file.writelines(s)
     file.close()
 
-output_dir = "output/"
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
 
-print("\n")
+def compute_Comprehensive_Set():
+    output_dir = "output/"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-portals_file = "../portals.json"
-categories_output_file = output_dir + 'most_coverage_categories.json'
+    print("\n")
 
-portals = read_portals_from_json_file(portals_file)
+    portals_file = "../portals.json"
+    categories_output_file = output_dir + 'most_coverage_categories.json'
 
-print("Number of Portals: " + "{0}".format(len(portals)))
+    portals = read_portals_from_json_file(portals_file)
 
-lstCategories = all_categories(portals)
-print("Number of Categories: " + "{0}".format(len(lstCategories)))
+    print("Number of Portals: " + "{0}".format(len(portals)))
 
-tokens = tokenizer(lstCategories)
-print("Number of tokens in categories: " + "{0}".format(len(tokens)))
+    lstCategories = all_categories(portals)
+    print("Number of Categories: " + "{0}".format(len(lstCategories)))
 
-# AQ 09042024 ad  "?" (for Los Angeles)
-# words_to_remove = ["&","gis","/","kc","fy","foia","geo","city","data","go",
-#                      "-",",","houston","use","public","department","."]
-words_to_remove = ["?","&","gis","/","kc","fy","foia","geo","city","data","go",
-                     "-",",","houston","use","public","department","."]
+    tokens = tokenizer(lstCategories)
+    print("Number of tokens in categories: " + "{0}".format(len(tokens)))
 
-words = remove_stop_words(tokens, words_to_remove)
+    # AQ 09042024 ad  "?" (for Los Angeles)
+    # words_to_remove = ["&","gis","/","kc","fy","foia","geo","city","data","go",
+    #                      "-",",","houston","use","public","department","."]
+    words_to_remove = ["?","&","gis","/","kc","fy","foia","geo","city","data","go",
+                         "-",",","houston","use","public","department","."]
 
-dictWordFreq = count_word_frequency(words)
-print("Number of words in categories: " + "{0}".format(len(dictWordFreq)))
-print("\n")
-print(dictWordFreq)
-print("\n")
+    words = remove_stop_words(tokens, words_to_remove)
 
-dictPortalsCoverage = fillDictPortalsCoverage(dictWordFreq, portals)
-print(dictPortalsCoverage)
-print("\n")
+    dictWordFreq = count_word_frequency(words)
+    print("Number of words in categories: " + "{0}".format(len(dictWordFreq)))
+    print("\n")
+    print(dictWordFreq)
+    print("\n")
 
-trheshold = 98.0
-trheshold = 99.0
+    dictPortalsCoverage = fillDictPortalsCoverage(dictWordFreq, portals)
+    print(dictPortalsCoverage)
+    print("\n")
 
-more_coverage_words = more_coverage_words(dictPortalsCoverage, trheshold)
-print(more_coverage_words)
-print("\n")
+    trheshold = 99.0
 
-dictWordCategoryFreq = fillDictWordCategoryFreq(more_coverage_words, portals, words_to_remove)
-print(dictWordCategoryFreq)
-print("\n")
+    more_coverage_words = more_Coverage_Words(dictPortalsCoverage, trheshold)
+    print(more_coverage_words)
+    print("\n")
 
-dictWordFrequentlyCategories = fillDictWordFrequentlyCategories(dictWordCategoryFreq)
-print(dictWordFrequentlyCategories)
-print("\n")
+    dictWordCategoryFreq = fillDictWordCategoryFreq(more_coverage_words, portals, words_to_remove)
+    print(dictWordCategoryFreq)
+    print("\n")
 
-write_categories(dictWordFrequentlyCategories, categories_output_file)
+    dictWordFrequentlyCategories = fillDictWordFrequentlyCategories(dictWordCategoryFreq)
+    print(dictWordFrequentlyCategories)
+    print("\n")
+
+    write_categories(dictWordFrequentlyCategories, categories_output_file)

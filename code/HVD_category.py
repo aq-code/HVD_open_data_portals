@@ -73,13 +73,8 @@ def HVD_for_category(portals_per_category_usage,portals_category_match):
 
 
 
-
-
-
-
-
-
-if __name__ == '__main__':
+def compute_HVD(typeChart,cats):
+#if __name__ == '__main__':
 
     output_dir = "output/"
     import os
@@ -87,16 +82,19 @@ if __name__ == '__main__':
         os.makedirs(output_dir)
 
     #    portalsFile = '../portals.json'
-    portalsFile = "../portals_category_usage.json"
+    portalsFile = output_dir+"portals_category_usage.json"
 
-    categoryMatchFile = output_dir + 'portals_category_match_100_cities_all_synsetskkkk2.json'
+    categoryMatchFile = output_dir + 'portals_category_match_100_cities_all_synsets.json'
 
-    table_categories_portals= 'portals_table_categories_portals.csv'
+    table_categories_portals= 'table_categories_portals.csv'
 
     lstPortalUsageCatMerged=merge_usage_match(portalsFile, categoryMatchFile)
 
     HVD_4_cats=HVD_for_category(lstPortalUsageCatMerged, categoryMatchFile)
 
-    rep.show_cats_HVD(HVD_4_cats)
+    if typeChart:
+        rep.show_cats_HVD(HVD_4_cats)
+    else:
+        rep.show_cats_HVD(HVD_4_cats,'False')
 
-    rep.table_cats_portals(HVD_4_cats, lstPortalUsageCatMerged,output_dir,table_categories_portals,True)
+    rep.table_cats_portals(HVD_4_cats, lstPortalUsageCatMerged,output_dir,table_categories_portals,cats)

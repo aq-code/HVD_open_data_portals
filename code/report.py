@@ -173,13 +173,6 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, downindex, logstat
     listPortalsCategoryUsage = []
     j = 0
 
-    # file = open(allPortalsDatasetsFile, 'r', encoding="utf-8")
-    #
-    # with file as json_file:
-    #     l_all_datasets=json.load(file)
-    #
-    # all_datasets=pd.DataFrame(l_all_datasets)
-
     all_datasets=df_datasets_portals(allPortalsDatasetsFile)
     for p in portals:
 
@@ -261,7 +254,7 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, downindex, logstat
 
         orderedcat = catl['category']
 
-        ### (15/02/2024) queste le metto fuori dall'if perchè mi servono per i boxplot
+        ### for boxplots
         city =  str(p[1])
         index = np.arange(len(catl['pdat']))
         bar_width = 0.25
@@ -307,7 +300,6 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, downindex, logstat
             j=-1
         if downindex:
 
-            #### 25102023
             ax2 = axes.flatten()[j].twinx()
             ax2.set_yticks(())
             xs = index + bar_width  # np.arange(0, len(catl['pdownl']), 1)
@@ -375,9 +367,9 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, downindex, logstat
         statdict = stat.to_dict(orient="index")
         dd = {'city': city, 'url':p[0], 'categorization':'Categories','platform':p[3], 'categories': statdict}
         listPortalsCategoryUsage.append(dd)
-    write_portals_categories_usage(listPortalsCategoryUsage)
     # AQ end 080424 add save stat on dict, used by categories allignment and HDVi computation
     plt.show()
+    return listPortalsCategoryUsage
 
 
 def write_portals_categories_usage(listPortalsCategoryUsage):
@@ -396,6 +388,19 @@ def write_portals_categories_usage(listPortalsCategoryUsage):
     file.writelines(s)
     file.close()
 
+def write_portals_stats(statPortal):
+    import json
+
+    output_dir = "output/"
+
+    import os
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    PortalsStatsFile = output_dir + 'portals_stats.csv'
+
+    statPortal.to_csv(PortalsStatsFile, encoding='utf-8', index=False)
+
+
 
 def show_cats_HVD(HVD_4_cats, typeChart='HVDi'):
     import pandas as pd
@@ -413,6 +418,18 @@ def show_cats_HVD(HVD_4_cats, typeChart='HVDi'):
     plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
+    # fig, ax = plt.subplots(figsize=(8, 8))
+    # fig, ax = plt.subplots()
+    # fig.subplots_adjust(
+    #     top=0.880,
+    #     bottom=0.110,
+    #     left=0.205,
+    #     right=0.975,
+    #     hspace=0.2,
+    #     wspace=0.2
+    # )
+    #fig, ax = plt.subplots(layout="constrained")
+
     df_HVD_4_cats = pd.DataFrame.from_dict(HVD_4_cats, orient='index')
     df_HVD_4_cats.index.name = 'Category'
 
@@ -420,11 +437,13 @@ def show_cats_HVD(HVD_4_cats, typeChart='HVDi'):
         df_HVD_4_cats = df_HVD_4_cats.sort_values('HVDvalue')
         ax = df_HVD_4_cats.plot.barh(y='HVDvalue', label='$HVDi_c$')
         ax.set(xlabel='HVD index')
+        ax.set(ylabel='')
         plt.legend(loc='lower right')
     else:
         df_HVD_4_cats = df_HVD_4_cats.sort_values('num_portals')
         ax = df_HVD_4_cats.plot.barh(y='num_portals', color='r', label='Number of portals')
         ax.set(xlabel='Portals coverage')
+        ax.set(ylabel='')
         plt.legend(loc='lower right')
     plt.show()
 
@@ -458,7 +477,7 @@ def table_cats_portals(categories_HVD, portals, output_dir, file_name, showcats=
     if showcats:
         file_name = output_dir + "cats_" + file_name
     else:
-        file_name = output_dir + symbol + file_name
+        file_name = output_dir + symbol + "_" + file_name
     tab_cats_portals.to_csv(file_name, encoding='utf-8', index=False)
 
 
@@ -472,6 +491,11 @@ def find_original_category(portals, portal, allignedcategory):
 
 
 
+
+
+
+
+
 if __name__ == '__main__':
     import os
 
@@ -481,25 +505,12 @@ if __name__ == '__main__':
 
     allPortalsDatasetsFile = output_dir + input_filename
 
-    portalsUS= [
-            ["https://data.austintexas.gov", 'Austin', '2019-12-19', 'Socrata', '2353', '875463'],  # API ok
-            ["https://data.cityofnewyork.us",'New York','2019-12-19','Socrata','2771','8272963'],   #API ok
-            ["https://data.buffalony.gov",'Buffalo','2019-12-19','Socrata','213','260041'],         #API ok
-            ["https://data.cityofchicago.org",'Chicago','2019-12-19','Socrata','1368','2726772'],   #API ok
-            ["https://data.lacity.org",'Los Angeles','2019-12-18','Socrata','943','3883916'],       #API ok
-            ["https://data.seattle.gov",'Seattle','2019-12-19','Socrata','718','654224'],           #API ok
-            ['https://data.sfgov.org','San Francisco','2019-12-19','Socrata','1001','839841'],      #API ok
-            ["https://www.dallasopendata.com",'Dallas','2019-12-19','Socrata','1001','1259239'],    #API ok
-            ["https://data.honolulu.gov",'Honolulu','2019-12-19','Socrata','244','349275'],         #API ok
-            ['https://data.providenceri.gov','Providence','2019-12-19','Socrata','288','178784'],   #API ok
-            ['https://data.nola.gov','New Orleans','2019-12-19','Socrata','215','378623'],          #API ok
-            ["https://data.nashville.gov",'Nashville','2019-12-19','Socrata','172','636267'],       #API ok  #Ricaricare i datasetss
-         ]
+    from datasets_from_portal import portals_sample
+    portals=portals_sample()
 
-    portals=portalsUS
     #portals = [['https://data.providenceri.gov', 'Providence', '2019-12-19', 'Socrata', '288', '178784'],                  ]
 
-    showcat=True
+    showcat=False
     if showcat:
         plotpar = Plotpar(nrows=4, ncols=3, sharex=False, sharey=False, figsize=[16, 96], constrained_layout=False)
 
@@ -508,11 +519,8 @@ if __name__ == '__main__':
         show_categories(portals, allPortalsDatasetsFile, plotpar,True,False,False,False,False,False,False,True)          ### OK Stampa solo HVD + bubbles
         #show_categories(portals, allPortalsDatasetsFile, plotpar, True, True, True, False, False, False, False, True)     ### stampa HVD, Index (blubles) and Boxplots
         ####  rep.show_categories(portals, 'datasetstmp', plotpar,False,False,False,False,False,False,True,False)
-
-
-        tempshowplotdummy = 0  ## 3/10/2023 - con debug per vedere il plot prima di uscire
     else:
-        plotpar = Plotpar(nrows=4, ncols=3, sharex=False, sharey=False, figsize=[15, 10], constrained_layout=True)
+        plotpar = Plotpar(nrows=3, ncols=3, sharex=False, sharey=False, figsize=[15, 10], constrained_layout=True)
         plot_views_kist_log(portals, allPortalsDatasetsFile, plotpar, typep='all', ylog=False, query=False, geospdt=False,
                                 color='black')
 

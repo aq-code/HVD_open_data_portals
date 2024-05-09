@@ -399,9 +399,10 @@ def test(first_synset = True):
 
 
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
 
-    #test()
+def compute_Alignment():
+    import time
 
     output_dir = "output/"
 
@@ -409,20 +410,14 @@ if __name__ == '__main__':
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-#    portalsFile = '../portals.json'
-    portalsFile = "../portals_category_usage.json"
-#    categoriesFile = output_dir + 'most_coverage_categories_edited.json'
+    portalsFile = output_dir + 'portals_category_usage.json'
     categoriesFile = output_dir + 'most_coverage_categories.json'
-    similarityFile = output_dir + 'portals_category_similarities_100_cities_all_synsetsX1.json'
-    categoryMatchFile = output_dir + 'portals_category_match_100_cities_all_synsetsX1.json'
-
-
-
+    similarityFile = output_dir + 'portals_category_similarities_100_cities_all_synsets.json'
+    categoryMatchFile = output_dir + 'portals_category_match_100_cities_all_synsets.json'
 
     ## AQ: mod 04042024 - Error on readPortalsFromJsonFile -
     lstPortal = portal.read_portals_from_json_file(portalsFile)
 
-    #lstPortal = readPortalsFromJsonFile(portalsFile)
     print("Number of Portals: " + "{0}".format(len(lstPortal)))
 
     lstCategoriesCoverage = readCategoriesFromJsonFile(categoriesFile)
