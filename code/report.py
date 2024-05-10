@@ -153,7 +153,7 @@ def df_datasets_portals(allPortalsDatasetsFile):
 
 
 
-def show_categories(portals, allPortalsDatasetsFile, plotpar, downindex, logstats, log=True,sortcount=False,sortdown=False,sortmean=False,sortmedian=False,HVDvalue=False):
+def show_categories(portals, allPortalsDatasetsFile, plotpar, unspecified,downindex, logstats, log=True,sortcount=False,sortdown=False,sortmean=False,sortmedian=False,HVDvalue=False):
 
     import numpy as np
     from matplotlib.ticker import PercentFormatter
@@ -253,6 +253,9 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, downindex, logstat
             catl.sort_values(by=['HVDvalue'],inplace=True, ascending=False)
 
         orderedcat = catl['category']
+
+        if not unspecified:
+            catl=catl[catl.category!='Unspecified']
 
         ### for boxplots
         city =  str(p[1])
@@ -508,15 +511,15 @@ if __name__ == '__main__':
     from datasets_from_portal import portals_sample
     portals=portals_sample()
 
-    #portals = [['https://data.providenceri.gov', 'Providence', '2019-12-19', 'Socrata', '288', '178784'],                  ]
+    portals = [["https://data.cityofnewyork.us", 'New York', ' ', 'Socrata', '3253', '8272963']]
 
-    showcat=False
+    showcat=True
     if showcat:
-        plotpar = Plotpar(nrows=4, ncols=3, sharex=False, sharey=False, figsize=[16, 96], constrained_layout=False)
+        plotpar = Plotpar(nrows=1, ncols=1, sharex=False, sharey=False, figsize=[16, 96], constrained_layout=False)
 
         ### show_categories(portals, table, plotpar, downindex, logstats, log=True,sortcount=False,sortdown=False,sortmean=False,sortmedian=False,HVDvalue=False)
         #(portals, allPortalsDatasetsFile, plotpar,False,True,True,False,False,False,False,False)   ### OK Stampa solo BoxPLOT 95% (log=True)
-        show_categories(portals, allPortalsDatasetsFile, plotpar,True,False,False,False,False,False,False,True)          ### OK Stampa solo HVD + bubbles
+        show_categories(portals, allPortalsDatasetsFile, plotpar,False,True,False,False,False,False,False,False,True)          ### OK Stampa solo HVD + bubbles
         #show_categories(portals, allPortalsDatasetsFile, plotpar, True, True, True, False, False, False, False, True)     ### stampa HVD, Index (blubles) and Boxplots
         ####  rep.show_categories(portals, 'datasetstmp', plotpar,False,False,False,False,False,False,True,False)
     else:

@@ -166,6 +166,7 @@ def list_subset(lstCategorias):
     stopwords=['of','&','and',"-",",","'s"]
     new_list = [remove_stop_words(x.split(), stopwords) for x in lstCategorias]
     new_list.sort(key=lambda x: len(x), reverse=False)
+
     for e in new_list[1:]:
         if set(new_list[0]).issubset(set(e)):
             f = True
@@ -196,6 +197,52 @@ def select_most_repr_category(lstCategorias,dictFreq):
            maxcategory=category
            catmax=countwords
     return [maxcategory]
+
+def skimDoublesCategories(dictWordFrequentlyCategories):
+    import json
+
+    with open(dictWordFrequentlyCategories) as f:
+        lstCategories = json.load(f)
+        print(lstCategories)
+
+    #listWordFrequentlyCategories = list(dictWordFrequentlyCategories.values())
+    stopwords=['of','&','and',"-",",","'s"]
+    new_list = [[x,remove_stop_words(x.split(), stopwords)] for x in lstCategories]
+    new_list.sort(key=lambda x: len(x[0]), reverse=True)
+
+
+    slist=[]
+    found = False
+    for i in range(0,len(new_list)):
+        #new_list[:]=[x for x in new_list[i+1:] if not set(e[1]).issubset(set(x[1]))]
+        #l = [x for x in new_list[i + 1:] if set(e[1]).issubset(set(x[1]))]
+        e=new_list[i]
+        for j in range(i+1,len(new_list)):
+            s=new_list[j]
+            if set(s[1]).issubset(set(e[1])):
+                found=True
+                break
+        if found:
+           found=False
+        else:
+            slist.append(e)
+    slist.sort(key=lambda x: len(x[1]), reverse=False)
+    print(slist)
+    tmp=[x[0] for x in slist]
+
+    tmp=[x for x in lstCategories if x in tmp]
+
+    tmp=list(dict.fromkeys(tmp))
+
+    with open(dictWordFrequentlyCategories,"w") as f:
+        s = json.dumps(tmp, indent=4, ensure_ascii=False).encode('utf8').decode('latin1')
+        f.writelines(s)
+        f.close()
+
+    return tmp
+
+
+
 
 ### AQ END
 
@@ -232,46 +279,53 @@ def compute_Comprehensive_Set():
     portals_file = "../portals.json"
     categories_output_file = output_dir + 'most_coverage_categories.json'
 
-    portals = read_portals_from_json_file(portals_file)
+    test=False
+    if test:
+        portals = read_portals_from_json_file(portals_file)
 
-    print("Number of Portals: " + "{0}".format(len(portals)))
+        print("Number of Portals: " + "{0}".format(len(portals)))
 
-    lstCategories = all_categories(portals)
-    print("Number of Categories: " + "{0}".format(len(lstCategories)))
+        lstCategories = all_categories(portals)
+        print("Number of Categories: " + "{0}".format(len(lstCategories)))
 
-    tokens = tokenizer(lstCategories)
-    print("Number of tokens in categories: " + "{0}".format(len(tokens)))
+        tokens = tokenizer(lstCategories)
+        print("Number of tokens in categories: " + "{0}".format(len(tokens)))
 
-    # AQ 09042024 ad  "?" (for Los Angeles)
-    # words_to_remove = ["&","gis","/","kc","fy","foia","geo","city","data","go",
-    #                      "-",",","houston","use","public","department","."]
-    words_to_remove = ["?","&","gis","/","kc","fy","foia","geo","city","data","go",
-                         "-",",","houston","use","public","department","."]
+        # AQ 09042024 ad  "?" (for Los Angeles)
+        # words_to_remove = ["&","gis","/","kc","fy","foia","geo","city","data","go",
+        #                      "-",",","houston","use","public","department","."]
+        words_to_remove = ["?","&","gis","/","kc","fy","foia","geo","city","data","go",
+                             "-",",","houston","use","public","department","."]
 
-    words = remove_stop_words(tokens, words_to_remove)
+        words = remove_stop_words(tokens, words_to_remove)
 
-    dictWordFreq = count_word_frequency(words)
-    print("Number of words in categories: " + "{0}".format(len(dictWordFreq)))
+        dictWordFreq = count_word_frequency(words)
+        print("Number of words in categories: " + "{0}".format(len(dictWordFreq)))
+        print("\n")
+        print(dictWordFreq)
+        print("\n")
+
+        dictPortalsCoverage = fillDictPortalsCoverage(dictWordFreq, portals)
+        print(dictPortalsCoverage)
+        print("\n")
+
+        trheshold = 99.0
+
+        more_coverage_words = more_Coverage_Words(dictPortalsCoverage, trheshold)
+        print(more_coverage_words)
+        print("\n")
+
+        dictWordCategoryFreq = fillDictWordCategoryFreq(more_coverage_words, portals, words_to_remove)
+        print(dictWordCategoryFreq)
+        print("\n")
+
+        dictWordFrequentlyCategories = fillDictWordFrequentlyCategories(dictWordCategoryFreq)
+        write_categories(dictWordFrequentlyCategories, categories_output_file)
+        print(dictWordFrequentlyCategories)
+    listWordFrequentlyCategories=[]
+    listWordFrequentlyCategories=skimDoublesCategories(categories_output_file)
+    print("End skimming: ",listWordFrequentlyCategories)
+   # write_categories(dictWordFrequentlyCategories, categories_output_file)
+    #print(dictWordFrequentlyCategories)
     print("\n")
-    print(dictWordFreq)
-    print("\n")
 
-    dictPortalsCoverage = fillDictPortalsCoverage(dictWordFreq, portals)
-    print(dictPortalsCoverage)
-    print("\n")
-
-    trheshold = 99.0
-
-    more_coverage_words = more_Coverage_Words(dictPortalsCoverage, trheshold)
-    print(more_coverage_words)
-    print("\n")
-
-    dictWordCategoryFreq = fillDictWordCategoryFreq(more_coverage_words, portals, words_to_remove)
-    print(dictWordCategoryFreq)
-    print("\n")
-
-    dictWordFrequentlyCategories = fillDictWordFrequentlyCategories(dictWordCategoryFreq)
-    print(dictWordFrequentlyCategories)
-    print("\n")
-
-    write_categories(dictWordFrequentlyCategories, categories_output_file)
