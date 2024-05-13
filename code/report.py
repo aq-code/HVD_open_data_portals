@@ -517,10 +517,25 @@ if __name__ == '__main__':
     if showcat:
         plotpar = Plotpar(nrows=1, ncols=1, sharex=False, sharey=False, figsize=[16, 96], constrained_layout=False)
 
-        ### show_categories(portals, table, plotpar, downindex, logstats, log=True,sortcount=False,sortdown=False,sortmean=False,sortmedian=False,HVDvalue=False)
-        #(portals, allPortalsDatasetsFile, plotpar,False,True,True,False,False,False,False,False)   ### OK Stampa solo BoxPLOT 95% (log=True)
-        show_categories(portals, allPortalsDatasetsFile, plotpar,False,True,False,False,False,False,False,False,True)          ### OK Stampa solo HVD + bubbles
-        #show_categories(portals, allPortalsDatasetsFile, plotpar, True, True, True, False, False, False, False, True)     ### stampa HVD, Index (blubles) and Boxplots
+        ### signature: show_categories(portals, allPortalsDatasetsFile, plotpar, unspecified,downindex, logstats, log=True,sortcount=False,sortdown=False,sortmean=False,sortmedian=False,HVDvalue=False):
+
+        # Metrics datasets count:
+        show_categories(portals, allPortalsDatasetsFile, plotpar, True, False, False, False,True, False, False, False, False)
+
+        # Metrics number downloads:
+        #show_categories(portals, allPortalsDatasetsFile, plotpar, False, False, False, False,False, True, False, False, False)
+
+        # Metrics mean downlaod:
+        #show_categories(portals, allPortalsDatasetsFile, plotpar, False, False, False, False,False, False, True, False, False)
+
+        # Metrics median downlaod:
+        #show_categories(portals, allPortalsDatasetsFile, plotpar, False, False, False, False,False, False, False, True, False)
+
+        # BoxPLOT 95% (log=True)
+        #show_categories(portals, allPortalsDatasetsFile, plotpar,False,True,True,True,False,False,False,False,False)   ### OK Stampa solo BoxPLOT 95% (log=True)
+        #show_categories(portals, allPortalsDatasetsFile, plotpar,False,True,False,False,False,False,False,False,True)          ### OK Stampa solo HVD + bubbles
+
+        #show_categories(portals, allPortalsDatasetsFile, plotpar, False,True, True, True, False, False, False, False, True)     ### stampa HVD, Index (blubles) and Boxplots
         ####  rep.show_categories(portals, 'datasetstmp', plotpar,False,False,False,False,False,False,True,False)
     else:
         plotpar = Plotpar(nrows=3, ncols=3, sharex=False, sharey=False, figsize=[15, 10], constrained_layout=True)
