@@ -340,6 +340,6 @@ if __name__ == '__main__':
         compute_Alignment()
 
     if HVD:
-        typeChart=True
+        typeChart=False
         cats=True
         compute_HVD(typeChart,cats)

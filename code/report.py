@@ -4,11 +4,16 @@ import json
 from portal import Portal
 
 
-VIEWSCOLOR='lemonchiffon' #          '#FFD700'
+VIEWSCOLOR='gold'#'lemonchiffon' #          '#FFD700'
 VIEWSContCOLOR='red'
-DOWNLOADSCOLOR='lightblue'   #' lightsteelblue'
+DOWNLOADSCOLOR='dodgerblue'   #' lightsteelblue'
 DOWNLOADSContCOLOR='blue'
 DATASETSCOLOR='lightgrey'
+
+SMALL_SIZE = 14
+MEDIUM_SIZE = 16
+BIGGER_SIZE = 20
+
 
 
 
@@ -153,7 +158,7 @@ def df_datasets_portals(allPortalsDatasetsFile):
 
 
 
-def show_categories(portals, allPortalsDatasetsFile, plotpar, unspecified,downindex, logstats, log=True,sortcount=False,sortdown=False,sortmean=False,sortmedian=False,HVDvalue=False):
+def show_categories(portals, allPortalsDatasetsFile, plotpar, legendloc='upper right', unspecified=False,downindex=False, logstats=False,log=True,sortcount=False,sortdown=False,sortmean=False,sortmedian=False,HVDvalue=False):
 
     import numpy as np
     from matplotlib.ticker import PercentFormatter
@@ -167,52 +172,38 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, unspecified,downin
         fig.subplots_adjust(wspace=0.420)
         fig.subplots_adjust(left=0.150, right=0.9750, top=0.975, bottom=0.025)
     # Axes location
-    ax_left, ax_bottom, ax_width, ax_height = 0.1, 0.3, 0.8, 0.65
+    #ax_left, ax_bottom, ax_width, ax_height = 0.1, 0.3, 0.8, 0.65
 
-    ## AQ 05042024
     listPortalsCategoryUsage = []
     j = 0
 
     all_datasets=df_datasets_portals(allPortalsDatasetsFile)
     for p in portals:
-
         portal = Portal()
         portal.city = p[1]
         portal.url = p[0]
         portal.platform = p[3]
-
-        catl = extract_theme(portal, all_datasets)  ### Estrate group su categorie (torna somme e count)
-        #
-        catl = catl.sort_values(by='category')  ### l'aggiunta di 'Uncategorized', spezza l'ordine della query postgreSQL
+        catl = extract_theme(portal, all_datasets)
+        catl = catl.sort_values(by='category')
         catl = catl.reset_index(drop=True)
-        #
         tot = catl['count'].sum()
         totv = catl['views'].sum()
         totd = catl['downl'].sum()
         catl['pdat'] = (catl['count'] / tot) * 100.0
         catl['pviews'] = (catl['views'] / totv) * 100.0
         catl['pdownl'] = (catl['downl'] / totd) * 100.0
-
-        ########  Data for stats and HVD
-
         catl1 = extract_theme(portal, all_datasets, groupcat=False)  ### Estrate tutti i datasets stats e category
-
         catl1.loc[catl1['downl'] < 1, 'downl'] = 1
         catl1.loc[catl1['views'] < 1, 'views'] = 1
-
         stat = pd.DataFrame()
         stat['category'] = catl['category']
         stat['count'] = pd.to_numeric(catl["count"], downcast="integer")  # datasets number per category
         stat['pcount'] = stat['count'] / len(catl1)  # len(catl1) ->  datasets number per portal
-
-        ## begin AQ 05042024 Extend Stat with catl values
         stat['views'] = catl['views']
         stat['pviews'] = catl['pviews']
         stat['downl'] = catl['downl']
         stat['pdownl'] = catl['pdownl']
         stat['mean'] = catl1.groupby(['category'])['downl'].mean().reset_index()['downl']
-        ## end AQ 05042024
-
         perc=0.95
         if portal.platform == 'SocrataNew' or portal.platform == 'Socrata':
             stat['median'] = catl1.groupby(['category'])['downl'].median().reset_index()['downl']
@@ -228,35 +219,26 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, unspecified,downin
             fc = VIEWSCOLOR
             xax = 'views'
             xlabel = "Views"
-
         ###  HVDvalue metric
         ###
         stat['HVDvalue'] = stat['median'] * stat['pcount']+stat['p9X']*(stat['pcount']*(1-perc))
         ###
-
         if sortcount:
             catl.sort_values(by=['count'],inplace=True, ascending=False)
-
         if sortdown:
             catl.sort_values(by=['pdownl'],inplace=True, ascending=False)
-
         if sortmean:
             catl['meand']=catl['pdownl']/catl['count']
             catl.sort_values(by=['meand'],inplace=True, ascending=False)
-
         if sortmedian:
             catl['median']=stat['median']
             catl.sort_values(by=['median'],inplace=True, ascending=False)
-
         if HVDvalue:
             catl['HVDvalue']=stat['HVDvalue']
             catl.sort_values(by=['HVDvalue'],inplace=True, ascending=False)
-
         orderedcat = catl['category']
-
         if not unspecified:
             catl=catl[catl.category!='Unspecified']
-
         ### for boxplots
         city =  str(p[1])
         index = np.arange(len(catl['pdat']))
@@ -264,10 +246,9 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, unspecified,downin
         opacity = 1
         yticks = index + bar_width
         ###
-
-        fontsize = 13
-        titlefontsize = 15
-
+        fontsize = MEDIUM_SIZE
+        titlefontsize = BIGGER_SIZE
+        legendsize=SMALL_SIZE
         if (sortcount or sortdown or sortmean or sortmedian or HVDvalue):
         # create plot
             index = np.arange(len(catl['pdat']))
@@ -280,45 +261,43 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, unspecified,downin
                                                 alpha=opacity, label='Views')
                 rects3 = axes.flatten()[j].barh(index + bar_width + bar_width, catl['pdownl'], bar_width, color=DOWNLOADSCOLOR,
                                                 alpha=opacity, label='Downloads')
-
                 yticks = index + bar_width
             else:
                 rects3 = axes.flatten()[j].barh(index + bar_width, catl['pviews'], bar_width, color=VIEWSCOLOR,
                                                 alpha=opacity, label='Views')
                 yticks = index + bar_width / 2
-
             axes.flatten()[j].set_title(city, fontsize=titlefontsize, fontweight='bold', pad=2)
             axes.flatten()[j].set_yticks(yticks)
             axes.flatten()[j].set_yticklabels(catl['category'].to_list(),
                                               multialignment='center')  #### NB  multialignment. per funzionare bisogna forzare un "\n" in mezzo alla label.....
-
             axes.flatten()[j].invert_yaxis()
             axes.flatten()[j].tick_params(axis='both', which='major', labelsize=fontsize)
             axes.flatten()[j].xaxis.set_major_formatter(PercentFormatter(100, symbol='%', decimals=0))
-
-            axes.flatten()[j].legend(loc='upper right',
-                                     ####bbox_to_anchor=(1, 1),
-                                     markerscale=0.2, frameon=True, fontsize=fontsize)
+            axes.flatten()[j].legend(loc=legendloc,
+                                     markerscale=0.2, frameon=True, fontsize=legendsize)
+            if unspecified:
+                indU=catl['category'].tolist().index('Unspecified')
+                plt.setp(axes.flatten()[j].get_yticklabels()[indU], color='red')
         else:
             j=-1
         if downindex:
 
+            if not unspecified:
+                stat = stat[stat.category != 'Unspecified']
+                catl1= catl1[catl1.category != 'Unspecified']
+                ###orderedcat= orderedcat[orderedcat.category != 'Unspecified']
+                orderedcat=orderedcat.drop(orderedcat.tolist().index('Unspecified'))
             ax2 = axes.flatten()[j].twinx()
             ax2.set_yticks(())
             xs = index + bar_width  # np.arange(0, len(catl['pdownl']), 1)
-
             if HVDvalue:
                 ys = sorted(stat['HVDvalue'], reverse=True)  # catl['pdownl'],
             else:
                 ys = stat['HVDvalue']       ##### NB per altre metriche fare attenzione a ordine asse categorie!!!!
-
             ymax = max(max(catl['pdat']), max(catl['pdownl']), max(catl['pviews']))
-
             axes.flatten()[j].set_xlim(xmin=0, xmax=ymax + 5)
-
             for x, y in zip(xs, ys):
                 label = "{:.0f}".format(y)
-
                 axes.flatten()[j].annotate(label,                       # this is the text
                                            (ymax + 5, x),               # these are the coordinates to position the label
                                            textcoords="offset points",  # how to position the text
@@ -328,8 +307,24 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, unspecified,downin
                                            bbox=dict(boxstyle="circle,pad=0.3",
                                                      fc=fc, ec=ec, lw=2)
                                            )  # horizontal alignment can be left, right or center
+        fig.subplots_adjust(
+            top=0.955,
+            bottom=0.05,
+            left=0.154,
+            right=0.992,
+            hspace=0.0,
+            wspace=0.064
+        )
 
-        if logstats:
+        if logstats:    #Draw Boxplot
+            fig.subplots_adjust(
+                top=0.933,
+                bottom=0.082,
+                left=0.154,
+                right=0.992,
+                hspace=0.0,
+                wspace=0.064
+            )
             if log:
                 axes.flatten()[j + 1].set_xticks(np.arange(0, 6))
                 axes.flatten()[j + 1].set_xticklabels(10.0 ** np.arange(0, 6))
@@ -340,9 +335,7 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, unspecified,downin
                 axes.flatten()[j + 1].set_xticklabels(np.arange(1, 23))
                 whisL = 10
                 whisU = 90
-
             axes.flatten()[j + 1].tick_params(axis='both', which='major', labelsize=fontsize)
-
             axes.flatten()[j + 1].set_title(city, fontsize=titlefontsize, fontweight='bold', pad=20)
             axes.flatten()[j + 1].set_yticks(yticks)
             b = sns.boxplot(data=catl1, x=xax, y='category', order=orderedcat, ax=axes.flatten()[j + 1],
@@ -356,21 +349,23 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, unspecified,downin
             axes.flatten()[j + 1].set_xscale("log")
             axes.flatten()[j + 1].xaxis.grid(True)
             axes.flatten()[j + 1].set_xlim(xmin=0, xmax=10000000)
-
-            b.set_xlabel(xlabel, fontsize=fontsize+2)
+            #b.set_xlabel(xlabel, fontsize=fontsize+2)
+            b.set_xlabel(xlabel, fontsize=MEDIUM_SIZE, weight="bold")
+            #plt.xlabel('HVD index', fontsize=MEDIUM_SIZE, weight="bold")
             b.set_ylabel("", fontsize=fontsize)
             j += 2
         else:
             j += 1
         sns.despine(left=True)
-    ### End 9102023
 
-    #AQ begin 08042024 add save stat on dict, used by categories allignment and HDVi computation
         stat.set_index("category", drop=True, inplace=True)
         statdict = stat.to_dict(orient="index")
         dd = {'city': city, 'url':p[0], 'categorization':'Categories','platform':p[3], 'categories': statdict}
         listPortalsCategoryUsage.append(dd)
     # AQ end 080424 add save stat on dict, used by categories allignment and HDVi computation
+
+
+
     plt.show()
     return listPortalsCategoryUsage
 
@@ -391,16 +386,14 @@ def write_portals_categories_usage(listPortalsCategoryUsage):
     file.writelines(s)
     file.close()
 
+
 def write_portals_stats(statPortal):
     import json
-
     output_dir = "output/"
-
     import os
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     PortalsStatsFile = output_dir + 'portals_stats.csv'
-
     statPortal.to_csv(PortalsStatsFile, encoding='utf-8', index=False)
 
 
@@ -409,45 +402,44 @@ def show_cats_HVD(HVD_4_cats, typeChart='HVDi'):
     import pandas as pd
     import matplotlib.pyplot as plt
 
+    fig, ax = plt.subplots()
     SMALL_SIZE = 14
     MEDIUM_SIZE = 16
     BIGGER_SIZE = 20
-
-    plt.rc('font', size=SMALL_SIZE)  # controls default text sizes
-    plt.rc('axes', titlesize=SMALL_SIZE)  # fontsize of the axes title
-    plt.rc('axes', labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
-    plt.rc('xtick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
-    plt.rc('ytick', labelsize=SMALL_SIZE)  # fontsize of the tick labels
-    plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
-    plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
-
-    # fig, ax = plt.subplots(figsize=(8, 8))
-    # fig, ax = plt.subplots()
-    # fig.subplots_adjust(
-    #     top=0.880,
-    #     bottom=0.110,
-    #     left=0.205,
-    #     right=0.975,
-    #     hspace=0.2,
-    #     wspace=0.2
-    # )
-    #fig, ax = plt.subplots(layout="constrained")
-
+    fig.subplots_adjust(
+        top = 0.978,
+        bottom = 0.086,
+        left = 0.154,
+        right = 0.989,
+        hspace = 0.0,
+        wspace = 0.064
+    )
     df_HVD_4_cats = pd.DataFrame.from_dict(HVD_4_cats, orient='index')
     df_HVD_4_cats.index.name = 'Category'
 
+    plt.yticks(fontsize=MEDIUM_SIZE)
+    plt.xticks(fontsize=MEDIUM_SIZE)
+    ax.set(ylabel='')
+    plt.legend(loc='lower right')
+
     if typeChart == 'HVDi':
         df_HVD_4_cats = df_HVD_4_cats.sort_values('HVDvalue')
-        ax = df_HVD_4_cats.plot.barh(y='HVDvalue', label='$HVDi_c$')
-        ax.set(xlabel='HVD index')
-        ax.set(ylabel='')
-        plt.legend(loc='lower right')
+        #ax = df_HVD_4_cats.plot.barh(y='HVDvalue', label='$HVDi_c$')
+        bar=ax.barh(df_HVD_4_cats.index, df_HVD_4_cats['HVDvalue'],color='blue')
+        ax.legend([bar],['$HVDi_c$'],loc='lower right',fontsize=SMALL_SIZE)
+        #ax.set(xlabel='HVD index')
+        plt.xlabel('HVD index',fontsize=MEDIUM_SIZE, weight="bold")
     else:
         df_HVD_4_cats = df_HVD_4_cats.sort_values('num_portals')
-        ax = df_HVD_4_cats.plot.barh(y='num_portals', color='r', label='Number of portals')
-        ax.set(xlabel='Portals coverage')
-        ax.set(ylabel='')
-        plt.legend(loc='lower right')
+        #ax = df_HVD_4_cats.plot.barh(y='num_portals', color='r', label='Number of portals')
+        bar=ax.barh(df_HVD_4_cats.index, df_HVD_4_cats['num_portals'],color='red', label='Number of portals')
+        ax.legend([bar],['Number of portals'],loc='lower right',fontsize=SMALL_SIZE)
+        #ax.set(xlabel='Portals coverage')
+        plt.xlabel('Portals coverage',fontsize=MEDIUM_SIZE, weight="bold")
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_visible(True)
     plt.show()
 
 
@@ -494,11 +486,6 @@ def find_original_category(portals, portal, allignedcategory):
 
 
 
-
-
-
-
-
 if __name__ == '__main__':
     import os
 
@@ -517,25 +504,26 @@ if __name__ == '__main__':
     if showcat:
         plotpar = Plotpar(nrows=1, ncols=1, sharex=False, sharey=False, figsize=[16, 96], constrained_layout=False)
 
-        ### signature: show_categories(portals, allPortalsDatasetsFile, plotpar, unspecified,downindex, logstats, log=True,sortcount=False,sortdown=False,sortmean=False,sortmedian=False,HVDvalue=False):
+        ### signature: def show_categories(portals, allPortalsDatasetsFile, plotpar, legendloc='upper right', unspecified=False,downindex=False, logstats=False,log=True,sortcount=False,sortdown=False,sortmean=False,sortmedian=False,HVDvalue=False):
+
 
         # Metrics datasets count:
-        show_categories(portals, allPortalsDatasetsFile, plotpar, True, False, False, False,True, False, False, False, False)
+        #show_categories(portals, allPortalsDatasetsFile, plotpar, 'lower right', True, False, False, False,True, False, False, False, False)
 
         # Metrics number downloads:
-        #show_categories(portals, allPortalsDatasetsFile, plotpar, False, False, False, False,False, True, False, False, False)
+        #show_categories(portals, allPortalsDatasetsFile, plotpar, 'lower right',False, False, False, False,False, True, False, False, False)
 
         # Metrics mean downlaod:
-        #show_categories(portals, allPortalsDatasetsFile, plotpar, False, False, False, False,False, False, True, False, False)
+        #show_categories(portals, allPortalsDatasetsFile, plotpar, '',False, False, False, False,False, False, True, False, False)
 
         # Metrics median downlaod:
-        #show_categories(portals, allPortalsDatasetsFile, plotpar, False, False, False, False,False, False, False, True, False)
+        #show_categories(portals, allPortalsDatasetsFile, plotpar, '',False, False, False, False,False, False, False, True, False)
 
         # BoxPLOT 95% (log=True)
-        #show_categories(portals, allPortalsDatasetsFile, plotpar,False,True,True,True,False,False,False,False,False)   ### OK Stampa solo BoxPLOT 95% (log=True)
-        #show_categories(portals, allPortalsDatasetsFile, plotpar,False,True,False,False,False,False,False,False,True)          ### OK Stampa solo HVD + bubbles
+        show_categories(portals, allPortalsDatasetsFile, plotpar,'',False,True,True,True,False,False,False,False,False)   ### OK Stampa solo BoxPLOT 95% (log=True)
+        #show_categories(portals, allPortalsDatasetsFile, plotpar,'',False,True,False,False,False,False,False,False,True)          ### OK Stampa solo HVD + bubbles
 
-        #show_categories(portals, allPortalsDatasetsFile, plotpar, False,True, True, True, False, False, False, False, True)     ### stampa HVD, Index (blubles) and Boxplots
+        #show_categories(portals, allPortalsDatasetsFile, plotpar, '',False,True, True, True, False, False, False, False, True)     ### stampa HVD, Index (blubles) and Boxplots
         ####  rep.show_categories(portals, 'datasetstmp', plotpar,False,False,False,False,False,False,True,False)
     else:
         plotpar = Plotpar(nrows=3, ncols=3, sharex=False, sharey=False, figsize=[15, 10], constrained_layout=True)
