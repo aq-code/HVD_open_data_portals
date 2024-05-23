@@ -296,21 +296,15 @@ def portals_ETL(portals,output_filename,get=False,usage=False):
 
 def portals_sample():
     portals = [
-        ["https://data.austintexas.gov", 'Austin', ' ', 'Socrata', '4408', '875463'],  # API ok
-        ["https://data.cityofnewyork.us", 'New York', ' ', 'Socrata', '3253', '8272963'],  # API ok
+        ["https://data.austintexas.gov", 'Austin', ' ', 'Socrata', '4419', '875463'],  # API ok
+        ["https://data.cityofnewyork.us", 'New York', ' ', 'Socrata', '3259', '8272963'],  # API ok
         ["https://data.buffalony.gov", 'Buffalo', ' ', 'Socrata', '2365', '260041'],  # API ok
         ["https://data.cityofchicago.org", 'Chicago', ' ', 'Socrata', '1790', '2726772'],  # API ok
         ["https://data.lacity.org", 'Los Angeles', ' ', 'Socrata', '1703', '3883916'],  # API ok
-        ["https://data.seattle.gov", 'Seattle', ' ', 'Socrata', '1118', '654224'],  # API ok
-        ['https://data.sfgov.org', 'San Francisco', ' ', 'Socrata', '1133', '839841'],  # API ok
         ["https://www.dallasopendata.com", 'Dallas', ' ', 'Socrata', '1173', '1259239'],  # API ok
-        #["https://data.mesaaz.gov", 'Mesa', '', 'Socrata', '1160', ''],
-        #['https://data.oaklandca.gov', 'Oakland', '', 'Socrata', '819', ''],
-        ["https://data.honolulu.gov", 'Honolulu', ' ', 'Socrata', '244', '349275'],  # API ok
-        #["https://stat.stpete.org", 'St. Petersburg', '', 'Socrata', '628', '']
-        #    ['https://data.providenceri.gov','Providence','2019-12-19','Socrata','288','178784'],   #API ok
-        #    ['https://data.nola.gov','New Orleans','2019-12-19','Socrata','215','378623'],          #API ok
-        #    ["https://data.nashville.gov",'Nashville','2019-12-19','Socrata','172','636267'],       #API ok  #Ricaricare i datasetss
+        ['https://data.sfgov.org', 'San Francisco', ' ', 'Socrata', '1133', '839841'],  # API ok
+        ["https://data.seattle.gov", 'Seattle', ' ', 'Socrata', '1094', '654224'],  # API ok
+        ["https://data.honolulu.gov", 'Honolulu', ' ', 'Socrata', '373', '349275'],  # API ok
     ]
     return portals
 
@@ -340,6 +334,7 @@ if __name__ == '__main__':
         compute_Alignment()
 
     if HVD:
-        typeChart=False
-        cats=True
-        compute_HVD(typeChart,cats)
+        tablecatscities=True
+        typeChart=False     #True to show categories coverage, False to show HDVic
+        cats=False          #True to show aligned categories in Table, False to show 'o'
+        compute_HVD(tablecatscities,typeChart,cats)    #Show charts, and write results in CSV

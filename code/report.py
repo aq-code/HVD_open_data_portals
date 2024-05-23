@@ -281,9 +281,9 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, legendloc='upper r
         else:
             j=-1
         if downindex:
-
             if not unspecified:
                 stat = stat[stat.category != 'Unspecified']
+                catl= catl[catl.category != 'Unspecified']
                 catl1= catl1[catl1.category != 'Unspecified']
                 ###orderedcat= orderedcat[orderedcat.category != 'Unspecified']
                 orderedcat=orderedcat.drop(orderedcat.tolist().index('Unspecified'))
@@ -303,7 +303,7 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, legendloc='upper r
                                            textcoords="offset points",  # how to position the text
                                            xytext=(10, +2),             # distance from text to points (x,y)
                                            ha='center', fontsize=fontsize,
-                                           color=ec,   #="white",
+                                           color='white',  #ec,   #="white",
                                            bbox=dict(boxstyle="circle,pad=0.3",
                                                      fc=fc, ec=ec, lw=2)
                                            )  # horizontal alignment can be left, right or center
@@ -315,8 +315,8 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, legendloc='upper r
             hspace=0.0,
             wspace=0.064
         )
-
-        if logstats:    #Draw Boxplot
+        # Draw Boxplot
+        if logstats:
             fig.subplots_adjust(
                 top=0.933,
                 bottom=0.082,
@@ -357,15 +357,10 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, legendloc='upper r
         else:
             j += 1
         sns.despine(left=True)
-
         stat.set_index("category", drop=True, inplace=True)
         statdict = stat.to_dict(orient="index")
         dd = {'city': city, 'url':p[0], 'categorization':'Categories','platform':p[3], 'categories': statdict}
         listPortalsCategoryUsage.append(dd)
-    # AQ end 080424 add save stat on dict, used by categories allignment and HDVi computation
-
-
-
     plt.show()
     return listPortalsCategoryUsage
 
@@ -485,27 +480,60 @@ def find_original_category(portals, portal, allignedcategory):
     return None
 
 
+def portals_Unspecified():
+    import os
+    import numpy as np
+    from matplotlib.ticker import PercentFormatter
+    output_dir = "output/"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    portalsFile = output_dir+"portals_category_usage.json"
+    with open(portalsFile, 'r') as json_file:
+        data = json.load(json_file)
+    portals_categories=[]
+
+    for p in data:
+        totd=0
+        totc=0
+        for v in p['categories'].values():
+            totd+=v['count']
+            totc+=1
+        totc -= 1
+        portals_categories.append([p['city'],p['categories']['Unspecified']['pcount'],totd,totc])
+    fig, ax = plt.subplots()
+    y_pos = np.arange(len(portals_categories))
+    plt.yticks(fontsize=MEDIUM_SIZE)
+    plt.xticks(fontsize=MEDIUM_SIZE)
+    ax.barh(y_pos, [round(x[1]*100) for x in portals_categories], align='center',color='grey')
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels([x[0] for x in portals_categories])
+    ax.xaxis.set_major_formatter(PercentFormatter(100, symbol='%'))
+    ax.invert_yaxis()  # labels read top-to-bottom
+    ax.set_xlabel('')
+    ax.set_title('')
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_visible(True)
+    plt.show()
+    print([(x[0],x[2],x[3]) for x in portals_categories])
+
+
 
 if __name__ == '__main__':
     import os
+    from datasets_from_portal import portals_sample
 
     output_dir = "output/"
-
     input_filename="AllPortalsDatasetsFile.json"
-
     allPortalsDatasetsFile = output_dir + input_filename
 
-    from datasets_from_portal import portals_sample
-    portals=portals_sample()
-
-    portals = [["https://data.cityofnewyork.us", 'New York', ' ', 'Socrata', '3253', '8272963']]
-
-    showcat=True
+    showcat=False
     if showcat:
+        portals = [["https://data.cityofnewyork.us", 'New York', ' ', 'Socrata', '3253', '8272963']]
         plotpar = Plotpar(nrows=1, ncols=1, sharex=False, sharey=False, figsize=[16, 96], constrained_layout=False)
 
         ### signature: def show_categories(portals, allPortalsDatasetsFile, plotpar, legendloc='upper right', unspecified=False,downindex=False, logstats=False,log=True,sortcount=False,sortdown=False,sortmean=False,sortmedian=False,HVDvalue=False):
-
 
         # Metrics datasets count:
         #show_categories(portals, allPortalsDatasetsFile, plotpar, 'lower right', True, False, False, False,True, False, False, False, False)
@@ -514,20 +542,26 @@ if __name__ == '__main__':
         #show_categories(portals, allPortalsDatasetsFile, plotpar, 'lower right',False, False, False, False,False, True, False, False, False)
 
         # Metrics mean downlaod:
-        #show_categories(portals, allPortalsDatasetsFile, plotpar, '',False, False, False, False,False, False, True, False, False)
+        #show_categories(portals, allPortalsDatasetsFile, plotpar, 'upper right',False, False, False, False,False, False, True, False, False)
 
         # Metrics median downlaod:
-        #show_categories(portals, allPortalsDatasetsFile, plotpar, '',False, False, False, False,False, False, False, True, False)
+        #show_categories(portals, allPortalsDatasetsFile, plotpar, 'upper right',False, False, False, False,False, False, False, True, False)
+
+        # Metrics HVD:
+        show_categories(portals, allPortalsDatasetsFile, plotpar, 'lower right',False,True, True, True, False, False, False, False, True)     ### stampa HVD, Index (blubles) and Boxplots
 
         # BoxPLOT 95% (log=True)
-        show_categories(portals, allPortalsDatasetsFile, plotpar,'',False,True,True,True,False,False,False,False,False)   ### OK Stampa solo BoxPLOT 95% (log=True)
-        #show_categories(portals, allPortalsDatasetsFile, plotpar,'',False,True,False,False,False,False,False,False,True)          ### OK Stampa solo HVD + bubbles
+        #show_categories(portals, allPortalsDatasetsFile, plotpar,'',False,True,True,True,False,False,False,False,False)   ### OK Stampa solo BoxPLOT 95% (log=True)
 
-        #show_categories(portals, allPortalsDatasetsFile, plotpar, '',False,True, True, True, False, False, False, False, True)     ### stampa HVD, Index (blubles) and Boxplots
-        ####  rep.show_categories(portals, 'datasetstmp', plotpar,False,False,False,False,False,False,True,False)
     else:
-        plotpar = Plotpar(nrows=3, ncols=3, sharex=False, sharey=False, figsize=[15, 10], constrained_layout=True)
-        plot_views_kist_log(portals, allPortalsDatasetsFile, plotpar, typep='all', ylog=False, query=False, geospdt=False,
+        unspecifiedfreq = False
+        if unspecifiedfreq:
+            portals_Unspecified()
+
+        else:
+            portals = portals_sample()
+            plotpar = Plotpar(nrows=3, ncols=3, sharex=False, sharey=False, figsize=[15, 10], constrained_layout=True)
+            plot_views_kist_log(portals, allPortalsDatasetsFile, plotpar, typep='all', ylog=False, query=False, geospdt=False,
                                 color='black')
 
 
