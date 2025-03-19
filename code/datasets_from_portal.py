@@ -179,9 +179,9 @@ def get_Portal_Datasets(Portal):
     for d in processor.generateFetchDatasetIter(Portal):
         datasets.append(d.dataset_dict())
 
-    print('total downloaded datasets:', len(datasets))
+    print('Total downloaded datasets:', len(datasets))
     end = time.time()
-    print('exec time:', end - start)
+    print('Exec time:', end - start)
 
     return datasets
 
