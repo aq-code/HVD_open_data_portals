@@ -364,7 +364,8 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, legendloc='upper r
         dd = {'city': city, 'url':p[0], 'categorization':'Categories','platform':p[3], 'categories': statdict}
         listPortalsCategoryUsage.append(dd)
     plt.show()
-    return listPortalsCategoryUsage
+    #return listPortalsCategoryUsage
+    return
 
 
 def write_portals_categories_usage(listPortalsCategoryUsage):
