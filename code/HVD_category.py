@@ -85,7 +85,7 @@ def HVD_for_category(portals_per_category_usage,portals_category_match):
                     cat_portals.add(p.city)
         cat_dict=dict({'HVDvalue':cat_HVD,'count':cat_count,'downl':cat_downl,'views':cat_views,'portals':cat_portals,'num_portals':len(cat_portals)})
         cats_HVD.update({cat_in_CSC : cat_dict})
-    print(cats_HVD)
+    #print(cats_HVD)
     return cats_HVD
 
 

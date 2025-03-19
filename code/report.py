@@ -522,7 +522,7 @@ def portals_Unspecified():
     ax.spines['left'].set_visible(False)
     ax.spines['bottom'].set_visible(True)
     plt.show()
-    print([(x[0],x[2],x[3]) for x in portals_categories])
+    #print([(x[0],x[2],x[3]) for x in portals_categories])
 
 
 
