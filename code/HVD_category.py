@@ -33,7 +33,7 @@ def datasets_in_portals_pool(portals):
 
 
 
-def HVD_city_first_category(portals_per_category_usage,output_dir):
+def HVD_city_first_categories(portals_per_category_usage, output_dir):
     import pandas as pd
 
     portals_categories = dict()
@@ -51,6 +51,7 @@ def HVD_city_first_category(portals_per_category_usage,output_dir):
 
     file_name = output_dir + 'HVD_portals_7categories.csv'
     df_from_dict.to_csv(file_name, encoding='utf-8', index=True)
+    return df_from_dict
 
 
 
@@ -110,7 +111,7 @@ def compute_HVD(tablecatscities,typeChart,cats):
 
 
     if tablecatscities:
-        HVD_city_first_category(portalsFile,output_dir)
+        HVD_city_first_categories(portalsFile, output_dir)
     else:
 
         lstPortalUsageCatMerged=merge_usage_match(portalsFile, categoryMatchFile)
