@@ -194,13 +194,13 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, legendloc='upper r
         catl['pdat'] = (catl['count'] / tot) * 100.0
         catl['pviews'] = (catl['views'] / totv) * 100.0
         catl['pdownl'] = (catl['downl'] / totd) * 100.0
-        catl1 = extract_theme(portal, all_datasets, groupcat=False)  ### Estrate tutti i datasets stats e category
+        catl1 = extract_theme(portal, all_datasets, groupcat=False)  ### Extracts all datasets stats & category
         catl1.loc[catl1['downl'] < 1, 'downl'] = 1
         catl1.loc[catl1['views'] < 1, 'views'] = 1
         stat = pd.DataFrame()
         stat['category'] = catl['category']
-        stat['count'] = pd.to_numeric(catl["count"], downcast="integer")  # datasets number per category
-        stat['pcount'] = stat['count'] / len(catl1)  # len(catl1) ->  datasets number per portal
+        stat['count'] = pd.to_numeric(catl["count"], downcast="integer")  # datasets number for category
+        stat['pcount'] = stat['count'] / len(catl1)  # len(catl1) ->  datasets number for portal
         stat['views'] = catl['views']
         stat['pviews'] = catl['pviews']
         stat['downl'] = catl['downl']
@@ -214,7 +214,7 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, legendloc='upper r
             fc = DOWNLOADSCOLOR
             xax = 'downl'
             xlabel = "Downloads"
-        else:  ## CKAN e altri portali (solo Views)
+        else:  ## CKAN and other portals (just Views)
             stat['median'] = catl1.groupby(['category'])['views'].median().reset_index()['views']
             stat['p9X'] = catl1.groupby(['category'])['views'].quantile(perc).reset_index()['views']
             ec = VIEWSContCOLOR
@@ -367,11 +367,10 @@ def show_categories(portals, allPortalsDatasetsFile, plotpar, legendloc='upper r
     #return listPortalsCategoryUsage
     return
 
-
-def write_portals_categories_usage(listPortalsCategoryUsage):
+def write_portals_categories_usage(listPortalsCategoryUsage,output_dir):
     import json
 
-    output_dir = "output/"
+    #######output_dir = "output/"
 
     import os
     if not os.path.exists(output_dir):
@@ -385,9 +384,9 @@ def write_portals_categories_usage(listPortalsCategoryUsage):
     file.close()
 
 
-def write_portals_stats(statPortal):
+def write_portals_stats(statPortal,output_dir):
     import json
-    output_dir = "output/"
+    #####output_dir = "output/"
     import os
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -487,11 +486,11 @@ def find_original_category(portals, portal, allignedcategory):
     return None
 
 
-def portals_Unspecified():
+def portals_Unspecified(output_dir):
     import os
     import numpy as np
     from matplotlib.ticker import PercentFormatter
-    output_dir = "output/"
+    #######output_dir = "output/"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     portalsFile = output_dir+"portals_category_usage.json"
@@ -531,7 +530,16 @@ if __name__ == '__main__':
     import os
     from datasets_from_portal import portals_sample
 
-    output_dir = "output/"
+    import datetime as dt
+    from datetime import datetime
+
+    dt = datetime.now().isoformat(timespec='minutes')
+    output_dir = "output-" + dt + "/"
+    for char in output_dir:
+        if char in ":":
+            output_dir = output_dir.replace(char, '')
+
+
     input_filename="AllPortalsDatasetsFile.json"
     allPortalsDatasetsFile = output_dir + input_filename
 

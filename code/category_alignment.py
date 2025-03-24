@@ -401,10 +401,10 @@ def test(first_synset = True):
 
 #if __name__ == '__main__':
 
-def compute_Alignment():
+def compute_Alignment(output_dir):
     import time
 
-    output_dir = "output/"
+    #####output_dir = "output/"
 
     import os
     if not os.path.exists(output_dir):
@@ -433,4 +433,4 @@ def compute_Alignment():
 
     print("\n")
     time = (end - start)
-    print('duration: {:.2f}'.format(time) + " s")
+    print('Duration: {:.2f}'.format(time) + " s")

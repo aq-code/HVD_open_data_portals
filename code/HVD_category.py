@@ -54,8 +54,6 @@ def HVD_city_first_categories(portals_per_category_usage, output_dir):
     return df_from_dict
 
 
-
-
 def HVD_for_category(portals_per_category_usage,portals_category_match):
 
     portals_categories_alligned = set()
@@ -90,16 +88,10 @@ def HVD_for_category(portals_per_category_usage,portals_category_match):
     return cats_HVD
 
 
-
-
-
-
-
-
-def compute_HVD(tablecatscities,typeChart,cats):
+def compute_HVD(tablecatscities,typeChart,cats,output_dir):
 #if __name__ == '__main__':
 
-    output_dir = "output/"
+    #####output_dir = "output/"
     import os
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -108,7 +100,6 @@ def compute_HVD(tablecatscities,typeChart,cats):
     portalsFile = output_dir+"portals_category_usage.json"
     categoryMatchFile = output_dir + 'portals_category_match_100_cities_all_synsets.json'
     table_categories_portals= 'table_categories_portals.csv'
-
 
     if tablecatscities:
         HVD_city_first_categories(portalsFile, output_dir)

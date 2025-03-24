@@ -187,7 +187,7 @@ def get_Portal_Datasets(Portal):
 
 
 ######################
-def extract_Categories_Usage(portals, allPortalsDatasetsFile):
+def extract_Categories_Usage(portals, allPortalsDatasetsFile,output_dir):
 
     from report import df_datasets_portals,extract_theme,write_portals_categories_usage,write_portals_stats
 
@@ -257,17 +257,18 @@ def extract_Categories_Usage(portals, allPortalsDatasetsFile):
         listPortalsStats.append(dictStat)
 
     # AQ end 080424 add save stat on dict, used by categories allignment and HDVi computation
-    write_portals_categories_usage(listPortalsCategoryUsage)
+    write_portals_categories_usage(listPortalsCategoryUsage,output_dir)
 
     statPortal = pd.DataFrame(listPortalsStats, columns=['City','Datasets','Downloads','Mean','Stdd','Min','1Q','2Q','3Q','Max'])
-    write_portals_stats(statPortal)
-    return listPortalsCategoryUsage
+    write_portals_stats(statPortal,output_dir)
+    #return listPortalsCategoryUsage
+    return
 
-def portals_ETL(portals,output_filename,get=False,usage=False):
+def portals_ETL(portals,output_dir,get=False,usage=False):
 
     import json
     import os
-    output_dir = "output/"
+    #####output_dir = "output/"
     output_filename = "AllPortalsDatasetsFile.json"
     allPortalsDatasetsFile = output_dir + output_filename
     if not os.path.exists(output_dir):
@@ -293,7 +294,7 @@ def portals_ETL(portals,output_filename,get=False,usage=False):
             file.writelines(s)
         file.close()
     if usage:
-        extract_Categories_Usage(portals, allPortalsDatasetsFile)
+        extract_Categories_Usage(portals, allPortalsDatasetsFile,output_dir)
 
 
 def portals_sample():
@@ -323,8 +324,10 @@ if __name__ == '__main__':
     HVD=True            # True to compute HVD and print results into charts and tables
 
     portals=portals_sample()
-
-    output_filename="AllPortalsDatasetsFile.json"
+    #
+    output_dir = "output/"
+    #
+    ##########output_filename="AllPortalsDatasetsFile.json"
 
     ##  All datasets retrieve info. Ex:
     #
@@ -339,16 +342,16 @@ if __name__ == '__main__':
     ##  extracted from the portals
 
     ###  get usage data from portals
-    portals_ETL(portals,output_filename,get,usage)  ###(A T T E N T I O N: rewriting 'output_filename')
+    portals_ETL(portals,output_dir,get,usage)  ###(A T T E N T I O N: rewriting 'output_filename')
     ###
     if CSC:
-        compute_Comprehensive_Set()
+        compute_Comprehensive_Set(output_dir)
 
     if align:
-        compute_Alignment()
+        compute_Alignment(output_dir)
 
     if HVD:
         tablecatscities=False
         typeChart=False      #True to show HDVic in bar chart, False to show categories coverage in bar chart
         cats=False          #True to show aligned categories in Table, False to show 'o'
-        compute_HVD(tablecatscities,typeChart,cats)    #Show charts, and write results in CSV
+        compute_HVD(tablecatscities,typeChart,cats,output_dir)    #Show charts, and write results in CSV

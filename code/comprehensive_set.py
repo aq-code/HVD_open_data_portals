@@ -201,7 +201,7 @@ def skimDoublesCategories(dictWordFrequentlyCategories):
     import json
     with open(dictWordFrequentlyCategories) as f:
         lstCategories = json.load(f)
-        print(lstCategories)
+        ####print(lstCategories)
     #listWordFrequentlyCategories = list(dictWordFrequentlyCategories.values())
     stopwords=['of','&','and',"-",",","'s"]
     new_list = [[x,remove_stop_words(x.split(), stopwords)] for x in lstCategories]
@@ -209,8 +209,6 @@ def skimDoublesCategories(dictWordFrequentlyCategories):
     slist=[]
     found = False
     for i in range(0,len(new_list)):
-        #new_list[:]=[x for x in new_list[i+1:] if not set(e[1]).issubset(set(x[1]))]
-        #l = [x for x in new_list[i + 1:] if set(e[1]).issubset(set(x[1]))]
         e=new_list[i]
         for j in range(i+1,len(new_list)):
             s=new_list[j]
@@ -222,7 +220,7 @@ def skimDoublesCategories(dictWordFrequentlyCategories):
         else:
             slist.append(e)
     slist.sort(key=lambda x: len(x[1]), reverse=False)
-    print(slist)
+    ######print(slist)
     tmp=[x[0] for x in slist]
     tmp=[x for x in lstCategories if x in tmp]
     tmp=list(dict.fromkeys(tmp))
@@ -257,8 +255,8 @@ def write_categories(dictWordFrequentlyCategories, outputCategoriesFile):
     file.close()
 
 
-def compute_Comprehensive_Set():
-    output_dir = "output/"
+def compute_Comprehensive_Set(output_dir):
+    ##### output_dir = "output/"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -290,30 +288,28 @@ def compute_Comprehensive_Set():
         dictWordFreq = count_word_frequency(words)
         print("Number of words in categories: " + "{0}".format(len(dictWordFreq)))
         print("\n")
-        print(dictWordFreq)
-        print("\n")
+        #print(dictWordFreq)
+        #print("\n")
 
         dictPortalsCoverage = fillDictPortalsCoverage(dictWordFreq, portals)
-        print(dictPortalsCoverage)
-        print("\n")
+        #print(dictPortalsCoverage)
+        #print("\n")
 
         trheshold = 99.0
 
         more_coverage_words = more_Coverage_Words(dictPortalsCoverage, trheshold)
-        print(more_coverage_words)
-        print("\n")
+        #print(more_coverage_words)
+        #print("\n")
 
         dictWordCategoryFreq = fillDictWordCategoryFreq(more_coverage_words, portals, words_to_remove)
-        print(dictWordCategoryFreq)
-        print("\n")
+        #print(dictWordCategoryFreq)
+        #print("\n")
 
         dictWordFrequentlyCategories = fillDictWordFrequentlyCategories(dictWordCategoryFreq)
         write_categories(dictWordFrequentlyCategories, categories_output_file)
-        print(dictWordFrequentlyCategories)
+        #print(dictWordFrequentlyCategories)
     listWordFrequentlyCategories=[]
     listWordFrequentlyCategories=skimDoublesCategories(categories_output_file)
-    print("End skimming: ",listWordFrequentlyCategories)
-   # write_categories(dictWordFrequentlyCategories, categories_output_file)
-    #print(dictWordFrequentlyCategories)
-    print("\n")
-
+    #print("End skimming: ",listWordFrequentlyCategories)
+    #print("\n")
+    return listWordFrequentlyCategories
