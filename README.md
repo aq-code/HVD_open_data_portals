@@ -12,7 +12,7 @@ The proposed method involves extracting download data, analyzing metrics to iden
 
 ## Input Data ##
 The methodology is exemplified using two input datasets:
-- A list of 100 U.S. citizen portals (portals.json), containing dataset categorization information.
+- A list of 100 U.S. citizen portals [portals.json](portals.json), containing dataset categorization information.
 - A list of target portals where the identification of high-value datasets is to be performed.
 The notebook [US_HVD_Report.ipynb](code/US_HVD_Report.ipynb) provides an implementation example of the methodology.
 
