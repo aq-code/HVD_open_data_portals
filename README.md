@@ -21,4 +21,4 @@ The notebook [US_HVD_Report.ipynb](code/US_HVD_Report.ipynb) provides an impleme
 - Required packages listed in requirements.txt
 
 
-[^1] According to the methodology presented by [Pinto et al.] in (https://link.springer.com/chapter/10.1007/978-3-031-15086-9_17) and the code shared on GitHub (https://github.com/higorspinto/category_alignment_open_data_portals)
+[^1]: According to the methodology presented by [Pinto et al.] in (https://link.springer.com/chapter/10.1007/978-3-031-15086-9_17) and the code shared on GitHub (https://github.com/higorspinto/category_alignment_open_data_portals)
