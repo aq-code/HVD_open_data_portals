@@ -7,7 +7,7 @@ The proposed method involves extracting download data, analyzing metrics to iden
 
 - Download dataset metadata from selected portals and extract usage information for the assigned categories.
 - Calculate metrics (i.e., $HVD_i$) for each portal.
-- Standardize and align the categories.
+- Standardize and align the categories[^1].
 - Compute $HVD_{i,c}$ for the aligned categories.
 
 ## Input Data ##
@@ -19,3 +19,6 @@ The notebook [US_HVD_Report.ipynb](code/US_HVD_Report.ipynb) provides an impleme
 ## Requirements ##
 - Python >= 3.8
 - Required packages listed in requirements.txt
+
+
+[^1] According to the methodology presented by [Pinto et al.] in (https://link.springer.com/chapter/10.1007/978-3-031-15086-9_17) and the code shared on GitHub (https://github.com/higorspinto/category_alignment_open_data_portals)
