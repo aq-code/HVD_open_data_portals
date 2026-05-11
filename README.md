@@ -1,6 +1,6 @@
 ## Overview ## 
 This project implements the methodology presented in 
-https://doi.org/10.48550/arXiv.2406.10541, aimed at automating the identification of High-Value Datasets (HVDs) on Open Government Data (OGD) portals. The methodology employs a quantitative approach based on a detailed analysis of user interest, derived from data usage statistics, thereby minimizing the need for human intervention.
+https://doi.org/10.1016/j.tele.2026.102415, aimed at automating the identification of High-Value Datasets (HVDs) on Open Government Data (OGD) portals. The methodology employs a quantitative approach based on a detailed analysis of user interest, derived from data usage statistics, thereby minimizing the need for human intervention.
 
 ## Methodology ##
 The proposed method involves extracting download data, analyzing metrics to identify high-value categories, and comparing HVD datasets across portals. The workflow consists of four main steps:
